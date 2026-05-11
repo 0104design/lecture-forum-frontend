@@ -11,7 +11,7 @@ export const lightTheme: DefaultTheme = {
             disabled: "#9ca3af",
         },
         divider: "#e5e7eb",
-        primary: "#25632b",
+        primary: "#1976d2",
         secondary: "#4b5563",
         success: "#10b981",
         error: "#ef4444",
