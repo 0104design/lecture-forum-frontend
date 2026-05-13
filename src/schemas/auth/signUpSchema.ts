@@ -12,10 +12,10 @@ export const signUpSchema = z.object({
     password: z.string().min(6, "비밀번호는 6자 이상이여햐 합니다"),
     passwordConfirm: z.string().min(1, "비밀번호 확인을 입력해 주세요"),
     name: z.string().min(2 , "이름을 정확히 입력해주세요"),
-    nickName: z.string().min(2, "닉네임은 2자 이상 입력해주세요").max(10, "닉네임은 10자 이하로 입력해주세요"),
+    nickname: z.string().min(2, "닉네임은 2자 이상 입력해주세요").max(10, "닉네임은 10자 이하로 입력해주세요"),
     email: z.email("올바른 이메일 형식이 아닙니다"),
     phoneNumber: z.string().regex(phoneRegex).optional(),
-    birthday: z.string().optional(),
+    birthdate: z.string().optional(),
     gender: z.enum(Gender),
 })
     .refine(data => data.password === data.passwordConfirm, {
