@@ -5,6 +5,8 @@ import styled from "styled-components";
 import { Gender } from "../../../types/user.type.ts";
 import Button from "../../../components/common/button/Button.tsx";
 import { useNavigate } from "react-router";
+import axiosInstance from "../../../api/axiosInstance.ts";
+import * as axios from "axios";
 
 function SignUpPage() {
     const navigate = useNavigate();
@@ -36,50 +38,31 @@ function SignUpPage() {
             // 프론트엔드에서만 필요한 passwordConfirm이라는 항목이 추가됨
             const { passwordConfirm, ...submitData } = data;
 
-            // submitData를 백엔드에게 전송해야함 => fetch =>  async & await => try & catch
-            // fetch(주소, 옵션, 바디)
-            // 옵션 객체 { method, header, body }
-            const response = await fetch("http://localhost:8000/user/create", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(submitData), // 객체를 그대로 보낼 수 없고, JSON.stringify()를 통해 string으로 변환해서 보내야 함.
-            });
+            // fetch() 로 통신을 하면 백엔드가 전달해주는 response가 존재하기만 하면 성공으로 판단
+            // axios로 하면 백엔드가 200번대 서성공 코드를 전해줘야만 성공으로 판단
+            // 이 외의 에러는 catch로 처리됨
+            await axiosInstance.post("/user/create", submitData);
 
-            // response도 http메서드임 => string릏 JSON으로 파싱해야함
-            // response = { ok: boolean, message: string }
-            // response.json을 하게 되면 백엔드에서 응답한 내용인 reponse.message를 JSON으로 파싱
-
-            const result = await response.json();
-
-            // response.ok 프로퍼티 안에 response 상태코드가 200번대라면 true, 아니라면 false
-            // throw 라는 키워드는 예외를 발생시켜 catch로 내가 임의적으로 보내는 것
-            if (!response.ok) {
-                throw new Error(result.message || "회원가입 중 오류가 발생했습니다.");
-            }
+            // 성공했었을 때 백엔드가 전해준 내용은 response.data 에 객체 상태로 존재하 (JSON 불필요)
 
             // 백엔드에게 전송해서 성공
             alert("회원가입이 완료되었습니다. 로그인을 진행해주세요.");
             navigate("/auth/signin");
         } catch (error) {
-            if (error instanceof Error) {
-                const errorMessage = error.message;
+            // 기본 에러 메세지를 미리 넣어서
+            let errorMessage = "회원가입 중 오류가 발생했습니다";
 
-                if (errorMessage === "이미 사용 중인 아이디입니다") {
-                    setError("username", { message: errorMessage });
-                } else if (errorMessage === "이미 가입된 이메일입니다") {
-                    setError("email", { message: errorMessage });
-                } else if (errorMessage === "이미 사용 중인 닉네임 입니다") {
-                    setError("nickname", { message: errorMessage });
-                } else {
-                    setError("root", { message: errorMessage });
-                }
+            // 지금 catch에 잡힌 error가  axios의 에러인지 판별
+            if (axios.isAxiosError(error)) {
+                // axios 에서 발생한 error라면 백엔드에서 기재한 내용이 error.response?.data?.message 존재
+                // 그 백엔드에서 전달해 준 내용dmf ㄷㄱ객Message에 저장
+                errorMessage = error.response?.data?.message || errorMessage;
+                // axio에서 발생한 에러가 아닌 자바스크립트 표준 에러 객체라면
+                // error.message에 담긴 에러 내용을 errorMessage 에 저장
+            } else if (error instanceof Error) {
+                errorMessage = error.message;
             }
-
-            console.log(error);
-            // 백엔드에게 전송해서 실패
-            setError("root", { message: "회원가입에 실패했습니다. 다시 시도해주세요." });
+            setError("root", { message: errorMessage });
         }
     };
 
@@ -191,6 +174,8 @@ function SignUpPage() {
                         {errors.gender && <ErrorMessage>{errors.gender.message}</ErrorMessage>}
                     </InputGroup>
                 </FormBox>
+                {errors.root && <RootErrorMessage>{errors.root.message}</RootErrorMessage>}
+
                 <Button
                     color={"primary"}
                     variant={"contained"}
@@ -301,4 +286,12 @@ const ErrorMessage = styled.span`
     font-size: 13px;
     color: ${props => props.theme.colors.error};
     font-weight: 500;
+`;
+
+const RootErrorMessage = styled.p`
+    font-size: 14px;
+    text-align: center;
+    color: ${(props => props.theme.colors.error)};
+    font-weight: 500;
+    margin-bottom: 50px;
 `;
