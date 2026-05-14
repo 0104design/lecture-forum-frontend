@@ -24,7 +24,7 @@ function App() {
         <ThemeContext.Provider value={{ theme, onChangeTheme }}>
             <ThemeProvider theme={theme === "light" ? lightTheme : darkTheme}>
                 <GlobalStyle />
-                <RouterProvider router={GetRouter}></RouterProvider>;
+                <RouterProvider router={GetRouter}></RouterProvider>
             </ThemeProvider>
         </ThemeContext.Provider>
     );

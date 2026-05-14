@@ -15,7 +15,7 @@ const StyledButton = styled.button<{
     color: ${props => (props.$variant === "contained" ? "#ffffff" : "inherit")};
     background-color: ${props =>
         props.$variant === "contained" ? props.theme.colors[props.$color] : "transparent"};
-    padding: ${props => (props.$variant === "icon" ? "8px" : "8px 16px")};
+    padding: ${props => (props.$variant === "icon" ? "8px 8px 4px  " : "8px 16px")};
     border-radius: ${props => (props.$variant === "icon" ? "50%" : "6px")};
     transition: all 0.5s;
 
