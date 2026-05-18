@@ -96,6 +96,14 @@ function SignUpPage() {
                         placeholder={"6자 이상 필요"}
                         type={"6자 이상 필요"}
                     />
+                    <InputGroup
+                        label={"비밀번호 확인"}
+                        id={"passwordConfirm"}
+                        errorMessage={errors.passwordConfirm?.message}
+                        registerObj={register("passwordConfirm")}
+                        placeholder={"비밀번호를 한번더 입력해주세요"}
+                        type={"password"}
+                    />
 
                     <InputGroup
                         label={"이름"}
