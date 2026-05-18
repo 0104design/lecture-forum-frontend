@@ -21,19 +21,28 @@ const adminLoader = () => {
     const { user, isLoggedIn } = useAuthStore.getState();
 
     if (!isLoggedIn) {
-        alert("로그인이 필요합니다.")
+        alert("로그인이 필요합니다.");
         // 컴포넌트가 아닌 곳에서 사용자를 이동시키는 메서드
         // 이전에 사용했던 navigate는 컴포넌트 안ㅇ에서만 사용ㅇ가능
         return redirect("/auth/signin");
     }
 
     if (user?.role !== Role.ADMIN) {
-        alert("관리자만 접근할 수 있는 페이지입니다.")
+        alert("관리자만 접근할 수 있는 페이지입니다.");
         return redirect("/");
     }
 
     return null;
-}
+};
+
+const guestLoader = () => {
+    const { isLoggedIn } = useAuthStore.getState();
+
+    if (isLoggedIn) {
+        return redirect("/");
+    }
+    return null;
+};
 
 const router = createBrowserRouter([
     {
@@ -43,6 +52,7 @@ const router = createBrowserRouter([
             { index: true, element: <HomePage /> },
             {
                 path: "auth",
+                loader: guestLoader,
                 children: [
                     { path: "signin", element: <SignInPage /> },
                     { path: "signup", element: <SignUpPage /> },
