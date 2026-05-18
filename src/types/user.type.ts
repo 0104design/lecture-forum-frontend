@@ -23,3 +23,18 @@ export const Role = {
     ADMIN: "ADMIN",
 };
 export type RoleType = (typeof Role)[keyof typeof Role];
+
+
+export interface User {
+    id: number;
+    createdAt: Date;
+    updatedAt: Date;
+    username: string;
+    name: string;
+    nickname: string;
+    email: string;
+    phoneNumber: string | null;
+    birthdate: Date | null;
+    gender: GenderTYpe;
+    role: RoleType;
+}
