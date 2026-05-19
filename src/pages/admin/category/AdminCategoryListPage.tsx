@@ -15,6 +15,7 @@ import {
     AdminTitle,
 } from "../../../components/admin/admin.style.tsx";
 import Badge from "../../../components/common/badge/Badge.tsx";
+import { FiRefreshCcw, FiTrash } from "react-icons/fi";
 
 function AdminCategoryListPage() {
     const [categories, setCategories] = useState<Category[]>([]);
@@ -39,6 +40,20 @@ function AdminCategoryListPage() {
 
         loadCategories().then(() => {});
     }, []);
+
+    const handleToggleCategoryStatus = async (id: number) => {
+        try {
+            const result = await adminCategoryApi.toggleCategoryStatus(id);
+            alert(`카테고리가 성공적으로 ${result.status}로 변경되었습니다.`);
+            // 백엔드에게 목록을 요청하디 않고 화면의 데이터만 교체.
+            setCategories(prev => prev.map(item => (item.id === id ? { ...item, status: result.status } : item)));
+
+
+        } catch (error) {
+            console.log(error);
+            alert("카테고리 변경 중 오류가 발생하였습니다.");
+        }
+    };
 
     return (
         <AdminContainer>
@@ -82,11 +97,29 @@ function AdminCategoryListPage() {
                                         <AdminTd>{item.id}</AdminTd>
                                         <AdminTd>{item.name}</AdminTd>
                                         <AdminTd>
-                                            <Badge color={item.status === CategoryStatus.ACTIVE ? "success" : "secondary"}>
-                                                {item.status === CategoryStatus.ACTIVE ? "활성" : "비활성"}
+                                            <Badge
+                                                color={
+                                                    item.status === CategoryStatus.ACTIVE
+                                                        ? "success"
+                                                        : "secondary"
+                                                }>
+                                                {item.status === CategoryStatus.ACTIVE
+                                                    ? "활성"
+                                                    : "비활성"}
                                             </Badge>
                                         </AdminTd>
-                                        <AdminTd>기능</AdminTd>
+                                        <AdminTd>
+                                            <Button
+                                                color={"primary"}
+                                                variant={"icon"}
+                                                onClick={() => handleToggleCategoryStatus(item.id)}>
+                                                {item.status === CategoryStatus.ACTIVE ? (
+                                                    <FiTrash size={18} />
+                                                ) : (
+                                                    <FiRefreshCcw size={18} />
+                                                )}
+                                            </Button>
+                                        </AdminTd>
                                     </tr>
                                 ))}
                             </tbody>
@@ -99,4 +132,3 @@ function AdminCategoryListPage() {
 }
 
 export default AdminCategoryListPage;
-

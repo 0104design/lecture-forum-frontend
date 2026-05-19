@@ -15,7 +15,13 @@ const createCategory = async (data: AdminCreateCategoryInputType): Promise<Categ
 
 // 카테고리 수정 API
 
+// 카테고리
+const toggleCategoryStatus = async (id: number) => {
+    const response = await axiosInstance.patch(`/admin/category/${id}/status `);
+    return response.data.data;
+}
 export default {
     fetchCategoryList,
     createCategory,
+    toggleCategoryStatus,
 };
