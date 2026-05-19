@@ -74,7 +74,7 @@ const SidebarMenu = styled.nav`
 
 const MenuItem = styled(Link)<{ $isActive: boolean }>`
     display: flex;
-    align-content: center;
+    align-items: center;
     gap: 12px;
     padding: 12px 24px;
     font-size: 15px;
