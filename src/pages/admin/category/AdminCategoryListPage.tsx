@@ -5,6 +5,7 @@ import Button from "../../../components/common/button/Button.tsx";
 import { Link } from "react-router";
 import Card from "../../../components/common/card/Card.tsx";
 import {
+    AdminButtonGroup,
     AdminContainer,
     AdminLoadingText,
     AdminPageHeader,
@@ -15,17 +16,18 @@ import {
     AdminTitle,
 } from "../../../components/admin/admin.style.tsx";
 import Badge from "../../../components/common/badge/Badge.tsx";
-import { FiRefreshCcw, FiTrash } from "react-icons/fi";
+import { FiEdit, FiRefreshCcw, FiTrash2 } from "react-icons/fi";
 
 function AdminCategoryListPage() {
     const [categories, setCategories] = useState<Category[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        // useEffect 안에서 비동개 함수를 async - await 방법으로 사용ㅇ할 거라면
-        // 함수를 만들어서 감싸주고 그걸 실행하도록 맞춰 적음
-        // 그리고 그 함수 실행 역시 비동기함수에 대한 실행이기 떄뮨에
-        //  then(() => {}) 아무것도 안 하는 then을 붙여줌
+        // useEffect 안에서 비동기함수를 async - await 방법으로 사용할거라면
+        // 함수를 만들어서 감싸주고, 그걸 실행하도록 문법에 맞춰 적음
+        // 그리고 그 함수 실행 역시 비동기함수에 대한 실행이기 때문에
+        // then(() => {})      아무것도 안하는 then을 붙여줌
+
         const loadCategories = async () => {
             try {
                 const data = await adminCategoryApi.fetchCategoryList();
@@ -42,16 +44,29 @@ function AdminCategoryListPage() {
     }, []);
 
     const handleToggleCategoryStatus = async (id: number) => {
+        // 백엔드에게 그 카테고리의 status를 바꿔줘 -> 함수 실행할 때 id를 받아야 함
         try {
             const result = await adminCategoryApi.toggleCategoryStatus(id);
             alert(`카테고리가 성공적으로 ${result.status}로 변경되었습니다.`);
-            // 백엔드에게 목록을 요청하디 않고 화면의 데이터만 교체.
-            setCategories(prev => prev.map(item => (item.id === id ? { ...item, status: result.status } : item)));
 
+            // 변경 작업을 하게 되면, 진짜 "변경"만 끝나는거지,
+            // 우리가 화면에 출력해주는 categories의 데이터는 변하지 않음
+            // 1. 전체 목록을 다시 백엔드에게 요청해서 받아와서 categories의 내용을 바꿔주던지
+            //     -> 장점 : 화면에 출력되는 내용이 백엔드가 "진짜" 제공해준 내용으로 바꿔주므로 데이터가 진실됨
+            //     -> 단점 : 목록을 다시 백엔드에게 요청해야 하므로, 백엔드가 응답이 오는데 시간이 걸림
+            // 2. 백엔드에게 목록을 요청하지 않고, 화면의 데이터만 교체해줄 것임
+            //    2번이 진행이 가능한 이유 : toggleCategoryStatus() 실행하면 진실된 "해당" 변경 정보는 백엔드가 주기 때문
+            //    -> 장점 : 백엔드가 두 번 일하지 않고서, 사용자에게 비교적 진실된 정보를 출력해줄 수 있음
 
+            // 내가 현재 갖고있는 목록이 저장된 categories 중,
+            // 변경 작업이 이루어진 id가 동일한 항목에 대해서만 result를 가지고 status를 바꿔주겠다
+
+            setCategories(prev =>
+                prev.map(item => (item.id === id ? { ...item, status: result.status } : item)),
+            );
         } catch (error) {
             console.log(error);
-            alert("카테고리 변경 중 오류가 발생하였습니다.");
+            alert("카테고리 변경 중 오류가 발생되었습니다.");
         }
     };
 
@@ -75,53 +90,64 @@ function AdminCategoryListPage() {
                     <AdminTableWrapper>
                         <AdminTable>
                             <thead>
-                                <tr>
-                                    <AdminTh $width={"10%"}>ID</AdminTh>
-                                    <AdminTh $width={"65%"}>카테고리명</AdminTh>
-                                    <AdminTh $width={"15%"}>상태</AdminTh>
-                                    <AdminTh $width={"15%"}>관리</AdminTh>
-                                </tr>
+                            <tr>
+                                <AdminTh $width={"10%"}>ID</AdminTh>
+                                <AdminTh $width={"65%"}>카테고리명</AdminTh>
+                                <AdminTh $width={"15%"}>상태</AdminTh>
+                                <AdminTh $width={"15%"}>관리</AdminTh>
+                            </tr>
                             </thead>
                             <tbody>
-                                {categories.length === 0 && (
-                                    <tr>
-                                        <AdminTd
-                                            colSpan={4}
-                                            style={{ textAlign: "center", padding: "100px" }}>
-                                            등록된 카테고리가 없습니다.
-                                        </AdminTd>
-                                    </tr>
-                                )}
-                                {categories.map(item => (
-                                    <tr key={item.id}>
-                                        <AdminTd>{item.id}</AdminTd>
-                                        <AdminTd>{item.name}</AdminTd>
-                                        <AdminTd>
-                                            <Badge
-                                                color={
-                                                    item.status === CategoryStatus.ACTIVE
-                                                        ? "success"
-                                                        : "secondary"
-                                                }>
-                                                {item.status === CategoryStatus.ACTIVE
-                                                    ? "활성"
-                                                    : "비활성"}
-                                            </Badge>
-                                        </AdminTd>
-                                        <AdminTd>
+                            {categories.length === 0 && (
+                                <tr>
+                                    <AdminTd
+                                        colSpan={4}
+                                        style={{ textAlign: "center", padding: "100px" }}>
+                                        등록된 카테고리가 없습니다.
+                                    </AdminTd>
+                                </tr>
+                            )}
+                            {categories.map(item => (
+                                <tr key={item.id}>
+                                    <AdminTd>{item.id}</AdminTd>
+                                    <AdminTd>{item.name}</AdminTd>
+                                    <AdminTd>
+                                        <Badge
+                                            color={
+                                                item.status === CategoryStatus.ACTIVE
+                                                    ? "success"
+                                                    : "secondary"
+                                            }>
+                                            {item.status === CategoryStatus.ACTIVE
+                                                ? "활성"
+                                                : "비활성"}
+                                        </Badge>
+                                    </AdminTd>
+                                    <AdminTd>
+                                        <AdminButtonGroup $align={"left"}>
                                             <Button
                                                 color={"primary"}
                                                 variant={"icon"}
-                                                onClick={() => handleToggleCategoryStatus(item.id)}>
+                                                as={Link}
+                                                to={`/admin/category/edit/${item.id}`}>
+                                                <FiEdit />
+                                            </Button>
+                                            <Button
+                                                color={"primary"}
+                                                variant={"icon"}
+                                                onClick={() =>
+                                                    handleToggleCategoryStatus(item.id)
+                                                }>
                                                 {item.status === CategoryStatus.ACTIVE ? (
-                                                    <FiTrash size={18} />
+                                                    <FiTrash2 size={18} />
                                                 ) : (
                                                     <FiRefreshCcw size={18} />
                                                 )}
                                             </Button>
-                                        </AdminTd>
-                                    </tr>
-                                ))}
+                                        </AdminButtonGroup>
+                                    </AdminTd>
+                                </tr>
+                            ))}
                             </tbody>
                         </AdminTable>
                     </AdminTableWrapper>
